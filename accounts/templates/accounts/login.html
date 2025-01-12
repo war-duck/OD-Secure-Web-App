@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form method="post" action="{% url 'app:home' %}">
+        {% csrf_token %}
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username">
+        <label for="password">Password:</label>
+        <a href="{% url 'accounts:password-reset' %}">Forgot Password :(</a>
+        <input type="password" name="password" id="password">
+        <!-- buttons  for registering and logging in, side by side -->
+        <a href="{% url 'accounts:register' %}">Register</a>
+        <button type="submit">Login</button>
+    </form>
+</html>

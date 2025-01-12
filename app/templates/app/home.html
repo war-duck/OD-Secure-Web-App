@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Home</h1>
+    <p>Welcome to the home page!</p>
+    {% if notes %}
+        <h2>Notes</h2>
+        <ul>
+            {% for note in notes %}
+                <li>{{ note }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No notes found.</p>
+    {% endif %}
+</html>
