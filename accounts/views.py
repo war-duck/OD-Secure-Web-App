@@ -62,9 +62,6 @@ class TwoFactorAuthView(View, LoginRequiredMixin):
             return redirect('app:home')
         else:
             messages.error(request, 'Invalid token')
-            device = get_user_totp_device(self, user)
-            if not device or not device.confirmed:
-                return redirect('accounts:2fa-register')
             return render(request, self.template_name, {'form': tokenForm})
         
 class RegisterView(View):
@@ -143,9 +140,13 @@ class RecoverTOTPDeviceView(View, LoginRequiredMixin):
         user = request.user
         if not user or user.is_anonymous:
             return redirect('accounts:login')
-        device = get_user_totp_device(self, user)
-        if not device or not device.confirmed:
+        device_totp = get_user_totp_device(self, user)
+        if not device_totp or not device_totp.confirmed:
             return redirect('accounts:2fa-register')
+        device_static = get_user_static_device(self, user)
+        if not device_static or not device_static.confirmed or device_static.token_set.count() == 0:
+            messages.error(request, 'No recovery codes available, contact the admin for further assistance')
+            return redirect('accounts:login')
         return render(request, self.template_name, {'form': form})
 
     def post(self, request):
@@ -158,14 +159,13 @@ class RecoverTOTPDeviceView(View, LoginRequiredMixin):
             for error in tokenForm.errors:
                 messages.error(request, tokenForm.errors[error])
             return render(request, self.template_name, {'form': tokenForm})
-        device = get_user_totp_device(self, user)
+        
+        device = get_user_static_device(self, user)
         if device.verify_token(tokenForm.cleaned_data['token']):
             login_otp(request, device)
             clear_messages(request)
-            return redirect('app:home')
+            get_user_totp_device(self, user).delete()
+            return redirect('account:2fa-register')
         else:
             messages.error(request, 'Invalid token')
-            device = get_user_totp_device(self, user)
-            if not device or not device.confirmed:
-                return redirect('accounts:2fa-register')
             return render(request, self.template_name, {'form': tokenForm})

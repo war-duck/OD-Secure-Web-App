@@ -15,4 +15,5 @@ urlpatterns = [
     path('recover-password/', views.RecoverPasswordView.as_view(), name='recover-password'),
     path('login/2fa/', views.TwoFactorAuthView.as_view(), name='2fa'),
     path('login/2fa/register/', views.TwoFactorAuthRegisterView.as_view(), name='2fa-register'),
+    path('login/2fa/recover/', views.RecoverTOTPDeviceView.as_view(), name='2fa-recover'),
 ]

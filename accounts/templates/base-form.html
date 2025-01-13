@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Title{% endblock %}</title>
+    {% block style %}<link rel="stylesheet" type="text/css" href="{% static 'accounts/style.css' %}">{% endblock %}
+</head>
+<body>
+    <div>
+        <h1>{% block formtitle %}{% endblock %}</h1>
+        {% block form %}
+        <form method="post">
+            {% csrf_token %}
+            {% block description %}{% endblock %}
+            {% block info_msgs %}{% endblock %}
+            <table>
+                {{ form.as_table }}
+            </table>
+            {% block error_msgs %}
+            {% if error %}
+                {% for field, error in error.items %}
+                    <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endblock error_msgs %}
+            {% block button_group %}
+            <div class="button-group">
+                <button type="submit">Submit</button>
+            </div>
+            {% endblock button_group %}
+        </form>
+        {% endblock form %}
+    </div>
+</body>
+</html>

@@ -1,26 +1,10 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/style.css' %}">
-</head>
-<body>
-    <div>
-        <h1>Login</h1>
-        <form method="post" id="loginForm">
-            {% csrf_token %}
-            <table>
-                {{ form.as_table }}
-            </table>
-            {% if error %}
-                {% for field, error in error.items %}
-                    <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
-                {% endfor %}
-            {% endif %}
-            <a href="{% url 'accounts:register' %}">Register</a>
-            <a href="{% url 'accounts:recover-password' %}">Reset Password</a>
-            <button type="submit">Login</button>
-        </form>
-    </div>
-</html>
+{% extends 'base-form.html' %}
+{% block title %}Login{% endblock %}
+{% block formtitle %}Login{% endblock %}
+{% block button_group %}
+<div class="button-group">
+{{ block.super }}
+<a href="{% url 'accounts:register' %}">Register</a>
+<a href="{% url 'accounts:recover-password' %}">Reset Password</a>
+</div>
+{% endblock %}
