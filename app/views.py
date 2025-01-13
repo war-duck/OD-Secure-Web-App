@@ -1,13 +1,25 @@
 from django_otp.decorators import otp_required
 from .models import Note
-from django.template import loader
-from django.http import HttpResponse
+from django.views import View
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
 
-@otp_required
-def home(request):
-    notes = Note.objects.filter(user=request.user)
-    template = loader.get_template('app/home.html')
-    context = {
-        'notes': notes
-    }
-    return HttpResponse(template.render(context, request))
+@method_decorator(otp_required, name='dispatch')
+class HomeView(View):
+    template_name = 'app/home.html'
+
+    def get(self, request):
+        notes = Note.objects.filter(user=request.user)
+        context = {
+            'notes': notes
+        }
+        return render(request, self.template_name, context)
+
+@method_decorator(otp_required, name='dispatch')
+class AddNoteView(View):
+    template_name = 'app/add_note.html'
+    
+    def get(self, request):
+        return render(request, self.template_name)
+    
+    
