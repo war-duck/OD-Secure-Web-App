@@ -93,3 +93,17 @@ img {
         width: 100%;
     }
 }
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.success {
+    color: lightgreen;
+    font-weight: bold;
+}
+
+.messages {
+    margin: 20px;
+}

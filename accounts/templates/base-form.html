@@ -12,15 +12,33 @@
         <form method="post">
             {% csrf_token %}
             {% block description %}{% endblock %}
-            {% block info_msgs %}{% endblock %}
+            {% block info_msgs %}
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                        {{ message }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endblock %}
             <table>
                 {{ form.as_table }}
             </table>
             {% block error_msgs %}
-            {% if error %}
-                {% for field, error in error.items %}
-                    <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                        {{ message }}
+                    </div>
+                    {% endif %}
                 {% endfor %}
+            </div>
             {% endif %}
             {% endblock error_msgs %}
             {% block button_group %}
