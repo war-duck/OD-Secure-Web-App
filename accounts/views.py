@@ -4,12 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-from django_otp import devices_for_user, login as login_otp
-from django_otp.plugins.otp_totp.models import TOTPDevice
-from io import BytesIO
-import qrcode
-import base64
+from django_otp import login as login_otp
 from .forms import RegisterForm, LoginForm, TwoFactorAuthForm
+from .helpers import clear_messages, get_user_totp_device, get_base64_encoded_qr_code, get_user_static_device
 User = get_user_model()
 
 class LoginView(View):
@@ -24,6 +21,7 @@ class LoginView(View):
         if not form.is_valid():
             for error in form.errors:
                 messages.error(request, form.errors[error])
+                print(form.errors[error])
             return render(request, self.template_name, {'form': form})
         user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
         if user is not None:
@@ -40,6 +38,8 @@ class TwoFactorAuthView(View, LoginRequiredMixin):
     def get(self, request):
         form = TwoFactorAuthForm()
         user = request.user
+        if not user or user.is_anonymous:
+            return redirect('accounts:login')
         device = get_user_totp_device(self, user)
         if not device or not device.confirmed:
             return redirect('accounts:2fa-register')
@@ -47,13 +47,13 @@ class TwoFactorAuthView(View, LoginRequiredMixin):
 
     def post(self, request):
         user = request.user
+        device = get_user_totp_device(self, user)
+        if not device or not device.confirmed:
+            return redirect('accounts:2fa-register')
         tokenForm = TwoFactorAuthForm(request.POST)
         if not tokenForm.is_valid():
             for error in tokenForm.errors:
                 messages.error(request, tokenForm.errors[error])
-            device = get_user_totp_device(self, user)
-            if not device or not device.confirmed:
-                return redirect('accounts:2fa-register')
             return render(request, self.template_name, {'form': tokenForm})
         device = get_user_totp_device(self, user)
         if device.verify_token(tokenForm.cleaned_data['token']):
@@ -65,7 +65,6 @@ class TwoFactorAuthView(View, LoginRequiredMixin):
             device = get_user_totp_device(self, user)
             if not device or not device.confirmed:
                 return redirect('accounts:2fa-register')
-            qrcode = get_base64_encoded_qr_code(device.config_url)
             return render(request, self.template_name, {'form': tokenForm})
         
 class RegisterView(View):
@@ -136,20 +135,37 @@ class TwoFactorAuthRegisterView(View, LoginRequiredMixin):
         login_otp(request, device)
         return redirect('app:home')
     
-def get_user_totp_device(self, user, confirmed=None):
-    devices = devices_for_user(user, confirmed=confirmed)
-    for device in devices:
-        if isinstance(device, TOTPDevice):
-            return device
-    return user.totpdevice_set.create(confirmed=False)
+class RecoverTOTPDeviceView(View, LoginRequiredMixin):
+    template_name = 'accounts/2fa-recover-device.html'
 
-def get_base64_encoded_qr_code(url):
-    image = qrcode.make(url)
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    return base64.b64encode(buffer.getvalue()).decode()
+    def get(self, request):
+        form = TwoFactorAuthForm()
+        user = request.user
+        if not user or user.is_anonymous:
+            return redirect('accounts:login')
+        device = get_user_totp_device(self, user)
+        if not device or not device.confirmed:
+            return redirect('accounts:2fa-register')
+        return render(request, self.template_name, {'form': form})
 
-def clear_messages(request):
-    storage = messages.get_messages(request)
-    for message in storage:
-        pass
+    def post(self, request):
+        user = request.user
+        device = get_user_totp_device(self, user)
+        if not device or not device.confirmed:
+            return redirect('accounts:2fa-register')
+        tokenForm = TwoFactorAuthForm(request.POST)
+        if not tokenForm.is_valid():
+            for error in tokenForm.errors:
+                messages.error(request, tokenForm.errors[error])
+            return render(request, self.template_name, {'form': tokenForm})
+        device = get_user_totp_device(self, user)
+        if device.verify_token(tokenForm.cleaned_data['token']):
+            login_otp(request, device)
+            clear_messages(request)
+            return redirect('app:home')
+        else:
+            messages.error(request, 'Invalid token')
+            device = get_user_totp_device(self, user)
+            if not device or not device.confirmed:
+                return redirect('accounts:2fa-register')
+            return render(request, self.template_name, {'form': tokenForm})

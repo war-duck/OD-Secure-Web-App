@@ -1,18 +1,24 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
+    <div>
+        <title>Home</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'app/style.css' %}">
+    </div>
 </head>
 <body>
-    <h1>Home</h1>
-    <p>Welcome to the home page!</p>
-    {% for note in notes %}
-        <div>
-            <h2>{{ note.title }}</h2>
-            <p>{{ note.content }}</p>
-        </div>
-    {% empty %}
-        <p>No notes found.</p>
-    {% endfor %}
+    <div>
+        <h1>Home</h1>
+        <p>Welcome to the home page!</p>
+        {% for note in notes %}
+            <div>
+                <h2>{{ note.title }}</h2>
+                <p>{{ note.content }}</p>
+            </div>
+        {% empty %}
+            <p>No notes found.</p>
+        {% endfor %}
+    </div>
 </body>
 </html>

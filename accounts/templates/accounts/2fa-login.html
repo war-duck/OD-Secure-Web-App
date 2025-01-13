@@ -1,23 +1,28 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>2FA</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/style.css' %}">
 </head>
 <body>
-    <h1>2FA</h1>
-    <form method="post" id="2faForm">
-        {% csrf_token %}
-        <table>
-            {{ form.as_table }}
-        </table>
-        {% if error %}
-            {% for field, error in error.items %}
-                <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
-            {% endfor %}
-        {% endif %}
-    
-        <div class="button-group">
-            <button type="submit">Submit</button>
-        </div>
-    </form>
+    <div>
+        <h1>2FA</h1>
+        <form method="post" id="2faForm">
+            {% csrf_token %}
+            <table>
+                {{ form.as_table }}
+            </table>
+            {% if error %}
+                {% for field, error in error.items %}
+                    <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        
+            <div class="button-group">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+</body>
 </html>
