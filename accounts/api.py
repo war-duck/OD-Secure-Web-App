@@ -51,7 +51,6 @@ def register_user(request):
 def user_login(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    print(request)
     if username is None or password is None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     user = None

@@ -10,7 +10,6 @@ class RegisterForm(forms.Form):
     
     def clean(self):
         cleaned_data = super().clean()
-        print(cleaned_data)
         password = cleaned_data.get('password')
         username = cleaned_data.get('username')
         confirm_password = cleaned_data.get('confirm_password')
@@ -40,4 +39,6 @@ class TwoFactorAuthForm(forms.Form):
         token = cleaned_data.get('token')
         if not token.isdigit():
             self.add_error('token', 'Token must be a number')
+        if len(token) != 6:
+            self.add_error('token', 'Token must be 6 digits long')
         return cleaned_data

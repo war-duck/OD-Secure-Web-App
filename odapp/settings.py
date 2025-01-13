@@ -135,6 +135,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'accounts:login'
 OTP_LOGIN_URL = 'accounts:login'
+OTP_TOTP_ISSUER = 'ODApp'
+OTP_TOTP_THROTTLE_FACTOR = 1
 LOGIN_REDIRECT_URL = 'app:home'
 TWO_FACTOR_PATCH_ADMIN = False
 
