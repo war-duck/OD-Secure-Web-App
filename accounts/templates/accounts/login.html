@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,15 +6,37 @@
 </head>
 <body>
     <h1>Login</h1>
-    <form method="post" action="{% url 'app:home' %}">
+    <form method="post" id="loginForm">
         {% csrf_token %}
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username">
-        <label for="password">Password:</label>
-        <a href="{% url 'accounts:password-reset' %}">Forgot Password :(</a>
-        <input type="password" name="password" id="password">
-        <!-- buttons  for registering and logging in, side by side -->
-        <a href="{% url 'accounts:register' %}">Register</a>
-        <button type="submit">Login</button>
+        <table>
+            <tr>
+                <td><label for="username">Username:</label></td>
+                <td><input type="text" name="username" id="username"></td>
+            </tr>
+            <tr>
+                <td><label for="password">Password:</label></td>
+                <td><input type="password" name="password" id="password"></td>
+            </tr>
+            {% if messages %}
+                <tr>
+                    <td colspan="2">
+                        <ul>
+                            {% for message in messages %}
+                                <li style="color: red; font-weight: bold;">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td colspan="2">
+                    <a href="{% url 'accounts:password-reset' %}" style="text-align: right; display: block;">Forgot Password?</a>
+                </td>
+            </tr>
+        </table>
+        <div class="button-group">
+            <a href="{% url 'accounts:register' %}" class="register-button">Register</a>
+            <button type="submit">Login</button>
+        </div>
     </form>
 </html>
