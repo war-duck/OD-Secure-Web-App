@@ -12,7 +12,7 @@ urlpatterns = [
     path('logout/', api.user_logout, name='api-logout'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('register/', views.RegisterView.as_view(), name='register'),
-    path('recover-password/', views.RecoverPasswordView.as_view(), name='password-reset'),
+    path('recover-password/', views.RecoverPasswordView.as_view(), name='recover-password'),
     path('login/2fa/', views.TwoFactorAuthView.as_view(), name='2fa'),
     path('login/2fa/register/', views.TwoFactorAuthRegisterView.as_view(), name='2fa-register'),
 ]

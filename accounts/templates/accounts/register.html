@@ -7,7 +7,15 @@
     <h1>Register</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <!-- Display form fields, in a table -->
+        <table>
+            {{ form.as_table }}
+        </table>
+        {% if error %}
+            {% for field, error in error.items %}
+                <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+            {% endfor %}
+        {% endif %}
         <button type="submit">Register</button>
     </form>
 </body>

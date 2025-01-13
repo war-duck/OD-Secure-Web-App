@@ -9,34 +9,15 @@
     <form method="post" id="loginForm">
         {% csrf_token %}
         <table>
-            <tr>
-                <td><label for="username">Username:</label></td>
-                <td><input type="text" name="username" id="username"></td>
-            </tr>
-            <tr>
-                <td><label for="password">Password:</label></td>
-                <td><input type="password" name="password" id="password"></td>
-            </tr>
-            {% if messages %}
-                <tr>
-                    <td colspan="2">
-                        <ul>
-                            {% for message in messages %}
-                                <li style="color: red; font-weight: bold;">{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                </tr>
-            {% endif %}
-            <tr>
-                <td colspan="2">
-                    <a href="{% url 'accounts:password-reset' %}" style="text-align: right; display: block;">Forgot Password?</a>
-                </td>
-            </tr>
+            {{ form.as_table }}
         </table>
-        <div class="button-group">
-            <a href="{% url 'accounts:register' %}" class="register-button">Register</a>
-            <button type="submit">Login</button>
-        </div>
+        {% if error %}
+            {% for field, error in error.items %}
+                <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+            {% endfor %}
+        {% endif %}
+        <button type="submit">Login</button>
+        <a href="{% url 'accounts:register' %}">Register</a>
+        <a href="{% url 'accounts:recover-password' %}">Reset Password</a>
     </form>
 </html>

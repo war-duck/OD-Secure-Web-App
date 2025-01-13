@@ -10,13 +10,12 @@
         <p>Scan the QR code below with your authenticator app:</p>
         <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
         <table>
-            <tr>
-                <td><label for="token">TOTP:</label></td>
-                <td><input type="text" name="token" id="token"></td>
-            </tr>
+            {{ form.as_table }}
         </table>
         {% if error %}
-            <p style="color: red; font-weight: bold;">{{ error }}</p>
+            {% for field, error in error.items %}
+                <p style="color: red; font-weight: bold;">{{ field }}: {{ error }}</p>
+            {% endfor %}
         {% endif %}
         <div class="button-group">
             <button type="submit">Submit</button>
