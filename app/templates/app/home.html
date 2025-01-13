@@ -6,14 +6,13 @@
 <body>
     <h1>Home</h1>
     <p>Welcome to the home page!</p>
-    {% if notes %}
-        <h2>Notes</h2>
-        <ul>
-            {% for note in notes %}
-                <li>{{ note }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
+    {% for note in notes %}
+        <div>
+            <h2>{{ note.title }}</h2>
+            <p>{{ note.content }}</p>
+        </div>
+    {% empty %}
         <p>No notes found.</p>
-    {% endif %}
+    {% endfor %}
+</body>
 </html>

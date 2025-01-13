@@ -20,6 +20,10 @@ class RegisterForm(forms.Form):
             self.add_error('username', 'You cannot use this username')
         if len(password) < 8:
             self.add_error('password', 'Password must be at least 8 characters long')
+        if all(char.isdigit() for char in password):
+            self.add_error('password', 'Password must contain at least one letter')
+        if all(char.isalpha() for char in password):
+            self.add_error('password', 'Password must contain at least one number')
         if not all(char in settings.USERNAME_ALLOWED_CHARS for char in username):
             self.add_error('username', 'Username contains invalid characters')
         return cleaned_data

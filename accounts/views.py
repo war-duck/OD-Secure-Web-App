@@ -1,18 +1,15 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-from django_otp import devices_for_user
+from django_otp import devices_for_user, login as login_otp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from io import BytesIO
 import qrcode
 import base64
 from .forms import RegisterForm, LoginForm, TwoFactorAuthForm
-from django import forms
-from django.contrib.auth import get_user_model
-from django_otp import login as login_otp
 User = get_user_model()
 
 class LoginView(View):
