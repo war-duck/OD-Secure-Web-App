@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <div>
+        <title>{{ note.title }}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'app/style.css' %}">
+    </div>
+</head>
+<body>
+    <div>
+        <h1>{{ note.title }}</h1>
+        {% if note.is_encrypted and not is_authenticated %}
+            <table>
+                {{ form.as_table }}
+            </table>
+        {% else %}
+            <p>{{ note.content }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<div class="note">
+    <h4>{{ note.title }}</h4>
+    {% if note.is_encrypted %}
+        <button class="decrypt-button" data-note-id="{{ note.id }}">
+            🔒
+        </button>
+        <div id="note-content-{{ note.id }}" class="note-content"></div>
+    {% else %}
+        <p>{{ note.content }}</p>
+    {% endif %}
+</div>

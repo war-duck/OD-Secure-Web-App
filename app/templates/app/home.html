@@ -10,15 +10,95 @@
 <body>
     <div>
         <h1>Home</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <a href="{% url 'app:add-note' %}" class="button">Add Note</a>
         <p>Welcome to the home page!</p>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
         {% for note in notes %}
-            <div>
-                <h2>{{ note.title }}</h2>
-                <p>{{ note.content }}</p>
-            </div>
+            {% include 'app/note_snippet.html' with note=note %}
         {% empty %}
             <p>No notes found.</p>
         {% endfor %}
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const decryptButtons = document.querySelectorAll(".decrypt-button");
+    
+            decryptButtons.forEach((button) => {
+                button.addEventListener("click", async () => {
+                    const noteId = button.getAttribute("data-note-id");
+    
+                    const password = prompt("Enter the password to decrypt the note:");
+    
+                    if (!password) {
+                        alert("Password is required to decrypt the note.");
+                        return;
+                    }
+    
+                    try {
+                        const response = await fetch('{% url "app:password-confirm" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken(),
+                            },
+                            body: JSON.stringify({
+                                note_id: noteId,
+                                password: password
+                            }),
+                            credentials: 'same-origin',
+                        });
+    
+                        const data = await response.json();
+    
+                        if (response.ok) {
+                            const contentDiv = document.getElementById(`note-content-${noteId}`);
+                            contentDiv.innerHTML = `<p>${data.content}</p>`;
+                            button.remove();
+                        } else if (response.status === 429) {
+                            alert("Too many attempts. Please try again later.");
+                        } else {
+                            alert(data.error || "An error occurred.");
+                        }
+                    } catch (error) {
+                        console.error("Error decrypting note:", error);
+                        alert("Failed to decrypt the note. Please try again.");
+                    }
+                });
+            });
+    
+            function getCsrfToken() {
+                const cookies = document.cookie.split("; ");
+                for (let cookie of cookies) {
+                    if (cookie.startsWith("csrftoken=")) {
+                        return cookie.split("=")[1];
+                    }
+                }
+                return "";
+            }
+        });
+    </script>
+    
 </body>
 </html>
