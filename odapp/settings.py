@@ -11,19 +11,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+import environ
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(DEBUG=(bool, False))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+1dh@bm5)a(bb&0hdb&6fo&aj26#h=eam2_=ler!4u@lib(why'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
+SECRET_KEY = env('SECRET_KEY')
+FIELD_ENCRYPTION_KEY = env('FIELD_ENCRYPTION_KEY')
 
 ALLOWED_HOSTS = []
 
@@ -42,6 +40,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_static',
     'rest_framework',
     'rest_framework.authtoken',
+    'encrypted_model_fields',
     'app.apps.AppConfig',
     'accounts.apps.AccountsConfig',
 ]
@@ -146,6 +145,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '1000/hour',
+    },
 }
 
 USERNAME_ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
