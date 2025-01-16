@@ -8,17 +8,10 @@ from django.contrib import messages
 from .helpers import encrypt_content, decrypt_content
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.db.models import Q
-from .forms import NoteForm, PasswordForm
-from rest_framework.views import APIView
-from django.contrib.auth.models import AnonymousUser
-from accounts.helpers import clear_messages
 from rest_framework.decorators import api_view
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.decorators import throttle_classes
 from rest_framework.response import Response
-import base64
-from .helpers import derive_key
 
 User = get_user_model()
 
@@ -27,11 +20,12 @@ class HomeView(View):
     template_name = 'app/home.html'
 
     def get(self, request):
-        # public_notes = Note.objects.filter(is_public=True)
-        # shared_notes = Note.objects.filter(shared_with)
-        notes = Note.objects.all()
+        public_notes = Note.objects.filter(is_public=True)
+        shared_notes = Note.objects.filter(shared_with=request.user)
+        # notes = Note.objects.all()
         context = {
-            'notes': notes
+            'public_notes': public_notes,
+            'shared_notes': shared_notes
         }
         return render(request, self.template_name, context)
 
@@ -86,49 +80,6 @@ class AddNoteView(View):
                                 password=None,)
         note.shared_with.set(recipients)
         return redirect('app:home')
-    
-# @method_decorator(otp_required, name='dispatch')
-# class NoteView(View):
-    
-#     template_name = 'app/note.html'
-
-#     def get(self, request, note_id):
-#         user = request.user
-#         if not user or isinstance(user, AnonymousUser) or not user.is_authenticated:
-#             messages.error(request, 'You must be logged in to view this note')
-#             return redirect('app:home')
-        
-#         note = Note.objects.get(id=note_id)
-#         if not note.is_accessible(user):
-#             messages.error(request, 'You do not have permission to view this note')
-#             return redirect('app:home')
-#         clear_messages(request)
-#         if note.is_encrypted:
-#             return render(request, self.template_name, {'note': note, 'is_authenticated': False, 'form': PasswordForm()})
-#         else:
-#             return render(request, self.template_name, {'note': note})
-        
-#     def post(self, request, note_id):
-#         note = Note.objects.get(id=note_id)
-#         user = request.user
-#         if not note.is_accessible(user):
-#             messages.error(request, 'You do not have permission to view this note')
-#             return redirect('app:home')
-#         if not note.is_encrypted:
-#             messages.error(request, 'This note is not encrypted')
-#             return redirect('app:home')
-#         password = PasswordForm(request.POST)
-#         if not password.is_valid():
-#             for error in password.errors:
-#                 messages.error(request, password.errors[error])
-#             return render(request, self.template_name, {'note': note, 'is_authenticated': False, 'form': password})
-#         if note.verify_password(password.cleaned_data['password']):
-#             note.content = decrypt_content(note.content, password.cleaned_data['password'], note.password)
-#             clear_messages(request)
-#             return render(request, self.template_name, {'note': note, 'is_authenticated': True})
-#         else:
-#             messages.error(request, 'Invalid password')
-#             return render(request, self.template_name, {'note': note, 'is_authenticated': False, 'form': password})
 
 @otp_required
 @api_view(['POST'])
