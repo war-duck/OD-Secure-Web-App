@@ -12,6 +12,8 @@ from rest_framework.decorators import api_view
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.decorators import throttle_classes
 from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import authentication_classes
 
 User = get_user_model()
 
@@ -84,14 +86,16 @@ class AddNoteView(View):
 @otp_required
 @api_view(['POST'])
 @throttle_classes([UserRateThrottle])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
 def password_confirm(request):
     user = request.user
-    print(user)
     password = request.data.get('password')
     note_id = request.data.get('note_id')
     if not password or not note_id:
         return Response({'error': 'Invalid request'}, status=400)
     note = Note.objects.get(id=request.data['note_id'])
+    if not note.is_accessible(user):
+        return Response({'error': 'Unauthorized'}, status=403)
     if not note.is_encrypted:
         return Response({'error': 'Note is not encrypted'}, status=400)
     if not note.verify_password(password):
