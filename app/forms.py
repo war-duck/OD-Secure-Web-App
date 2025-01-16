@@ -14,7 +14,8 @@ class NoteForm(forms.Form):
         is_encrypted = cleaned_data.get('is_encrypted')
         if is_encrypted and len(password) < 1:
             self.add_error('password', 'Encrypted message has to have a password')
-
+        if not cleaned_data.get('is_public') and not cleaned_data.get('shared_with'):
+            self.add_error('shared_with', 'You have to share the note with someone')
         return cleaned_data
     
 class PasswordForm(forms.Form):
