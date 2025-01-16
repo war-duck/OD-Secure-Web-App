@@ -42,3 +42,34 @@ class TwoFactorAuthForm(forms.Form):
         if len(token) != 6:
             self.add_error('token', 'Token must be 6 digits long')
         return cleaned_data
+    
+class PasswordRecoverForm(forms.Form):
+    password = forms.CharField(widget=forms.PasswordInput)
+    confirm_password = forms.CharField(widget=forms.PasswordInput)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        if len(password) < 8:
+            self.add_error('password', 'Password must be at least 8 characters long')
+        if not all(char in settings.USERNAME_ALLOWED_CHARS for char in cleaned_data.get('username')):
+            self.add_error('username', 'Username contains invalid characters')
+        if password != cleaned_data.get('confirm_password'):
+            self.add_error('confirm_password', 'Passwords do not match')
+        return cleaned_data
+    
+class UserTOTPVerifyForm(forms.Form):
+    username = forms.CharField(max_length=100)
+    token = forms.CharField(max_length=6)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        token = cleaned_data.get('token')
+        if not token.isdigit():
+            self.add_error('token', 'Token must be a number')
+        if len(token) != 6:
+            self.add_error('token', 'Token must be 6 digits long')
+        username = cleaned_data.get('username')
+        if not all(char in settings.USERNAME_ALLOWED_CHARS for char in username) or not User.objects.filter(username=username).exists():
+            self.add_error('username', 'Invalid username')
+        return cleaned_data

@@ -52,6 +52,14 @@
                 <p>No notes shared with you.</p>
             {% endfor %}
         </div>
+        <div>
+            <h3>My notes</h3>
+            {% for note in user_notes %}
+                {% include 'app/note_snippet.html' with note=note %}
+            {% empty %}
+                <p>No notes of your own.</p>
+            {% endfor %}
+        </div>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {

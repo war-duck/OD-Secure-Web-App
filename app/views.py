@@ -24,10 +24,11 @@ class HomeView(View):
     def get(self, request):
         public_notes = Note.objects.filter(is_public=True)
         shared_notes = Note.objects.filter(shared_with=request.user)
-        # notes = Note.objects.all()
+        user_notes = Note.objects.filter(user=request.user)
         context = {
             'public_notes': public_notes,
-            'shared_notes': shared_notes
+            'shared_notes': shared_notes,
+            'user_notes': user_notes
         }
         return render(request, self.template_name, context)
 

@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django_otp import login as login_otp
-from .forms import RegisterForm, LoginForm, TwoFactorAuthForm
+from .forms import RegisterForm, LoginForm, TwoFactorAuthForm, PasswordRecoverForm, UserTOTPVerifyForm
 from datetime import datetime
 from .helpers import clear_messages, get_user_totp_device, get_base64_encoded_qr_code, get_user_static_device
 User = get_user_model()
@@ -93,15 +93,54 @@ class RegisterView(View):
         clear_messages(request)
         return redirect('accounts:2fa-register')
             
-    
 class RecoverPasswordView(View):
     template_name = 'accounts/recover-password.html'
     
     def get(self, request):
-        return render(request, self.template_name)
+        form = UserTOTPVerifyForm()
+        return render(request, self.template_name, {'form': form})
     
     def post(self, request):
-        return redirect('accounts:login')
+        if not request.user.is_verified():
+            tokenForm = UserTOTPVerifyForm(request.POST)
+            if not tokenForm.is_valid():
+                print("tokenForm is not valid\n\n")
+                for error in tokenForm.errors:
+                    messages.error(request, tokenForm.errors[error])    
+                return render(request, self.template_name, {'form': tokenForm})
+            user = User.objects.get(username=tokenForm.cleaned_data['username'])
+            device = get_user_totp_device(self, user)
+            if not device or not device.confirmed:
+                print("device is not confirmed\n\n")
+                messages.add_message(request, messages.ERROR, 'You do not have 2FA enabled, contact admin for recovery options')
+                return redirect('accounts:login')
+            device = get_user_totp_device(self, user)
+            is_allowed, info = device.verify_is_allowed()
+            if not is_allowed:
+                print("device is not allowed\n\n")
+                locked_until = info.get('locked_until')
+                messages.error(request, 'Please try again in ' + str(int((locked_until - datetime.now(locked_until.tzinfo)).total_seconds())) + ' seconds')
+                return render(request, self.template_name, {'form': tokenForm})
+            if not device.verify_token(tokenForm.cleaned_data['token']):
+                print("device is not verified\n\n")
+                messages.error(request, 'Invalid token')
+                return render(request, self.template_name, {'form': tokenForm})
+            
+            print("yay, logging in\n\n")
+            login_otp(request, device)
+            clear_messages(request)
+            return render(request, self.template_name, {'form': PasswordRecoverForm(), 'username': user.username}) 
+        else:
+            form = PasswordRecoverForm(request.POST)
+            if not form.is_valid():
+                for error in form.errors:
+                    messages.error(request, form.errors[error])
+                return render(request, self.template_name, {'form': form})
+            cleaned_data = form.clean()
+            user = request.user
+            user.set_password(cleaned_data['password'])
+            user.save()
+            return redirect('app:home')
     
 class TwoFactorAuthRegisterView(View, LoginRequiredMixin):
     template_name = 'accounts/2fa-register.html'
@@ -155,6 +194,7 @@ class RecoverTOTPDeviceView(View, LoginRequiredMixin):
             return redirect('accounts:login')
         return render(request, self.template_name, {'form': form})
 
+    
     def post(self, request):
         user = request.user
         device = get_user_totp_device(self, user)
@@ -172,6 +212,7 @@ class RecoverTOTPDeviceView(View, LoginRequiredMixin):
             return render(request, self.template_name, {'form': tokenForm})
         
         login_otp(request, device)
+        print("Now user is verified: " + str(request.user.is_verified()))
         clear_messages(request)
         get_user_totp_device(self, user).delete()
         return redirect('account:2fa-register')
