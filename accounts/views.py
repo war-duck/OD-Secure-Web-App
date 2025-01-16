@@ -92,16 +92,17 @@ class RegisterView(View):
         login(request, user)
         clear_messages(request)
         return redirect('accounts:2fa-register')
-            
+    
 class RecoverPasswordView(View):
     template_name = 'accounts/recover-password.html'
     
     def get(self, request):
-        form = UserTOTPVerifyForm()
-        return render(request, self.template_name, {'form': form})
+        if request.user.is_authenticated:
+            return render(request, self.template_name, {'form': PasswordRecoverForm()})
+        return render(request, self.template_name, {'form': UserTOTPVerifyForm()})
     
     def post(self, request):
-        if not request.user.is_verified():
+        if not request.user.is_authenticated:
             tokenForm = UserTOTPVerifyForm(request.POST)
             if not tokenForm.is_valid():
                 print("tokenForm is not valid\n\n")
@@ -126,8 +127,7 @@ class RecoverPasswordView(View):
                 messages.error(request, 'Invalid token')
                 return render(request, self.template_name, {'form': tokenForm})
             
-            print("yay, logging in\n\n")
-            login_otp(request, device)
+            login(request, user)
             clear_messages(request)
             return render(request, self.template_name, {'form': PasswordRecoverForm(), 'username': user.username}) 
         else:
@@ -212,7 +212,6 @@ class RecoverTOTPDeviceView(View, LoginRequiredMixin):
             return render(request, self.template_name, {'form': tokenForm})
         
         login_otp(request, device)
-        print("Now user is verified: " + str(request.user.is_verified()))
         clear_messages(request)
         get_user_totp_device(self, user).delete()
         return redirect('account:2fa-register')
