@@ -1,11 +1,58 @@
 <div class="note">
     <h4>{{ note.title }}</h4>
+    <div class="note-signature">
+        <div>
+            <button class="toggle-key-button" data-key-id="{{ note.id }}">
+                Show Signature & Public Key
+            </button>
+        </div>
+    </div>
     {% if note.is_encrypted %}
         <button class="decrypt-button" data-note-id="{{ note.id }}">
             🔒
         </button>
         <div id="note-content-{{ note.id }}" class="note-content"></div>
     {% else %}
-        <p>{{ note.content }}</p>
+        <p>{{ note.content | safe }}</p>
     {% endif %}
 </div>
+
+<div id="popup-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h4>Signature & Public Key</h4>
+        <p><strong>Signature:</strong><br><span class="wrapped-text">{{ note.signature }}</span></p>
+        <p><strong>Public Key:</strong><br><span class="wrapped-text">{{ note.user.get_public_key }}</span></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('popup-modal');
+        const closeButton = modal.querySelector('.close-button');
+
+        document.querySelectorAll('.toggle-key-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const signature = "{{ note.signature }}";
+                const publicKey = "{{ note.user.get_public_key }}";
+
+                // Update the modal content
+                modal.querySelector('p:nth-of-type(1)').innerHTML = `<strong>Signature:</strong><br>${signature}`;
+                modal.querySelector('p:nth-of-type(2)').innerHTML = `<strong>Public Key:</strong><br>${publicKey}`;
+
+                // Show the modal
+                modal.style.display = 'block';
+            });
+        });
+
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+</script>

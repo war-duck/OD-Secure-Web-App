@@ -1,5 +1,7 @@
 import django.forms as forms
-
+import markdown
+import bleach
+from bleach_allowlist import markdown_attrs, markdown_tags
 class NoteForm(forms.Form):
     title = forms.CharField(max_length=100, required=True)
     content = forms.CharField(widget=forms.Textarea, required=False)
@@ -16,6 +18,11 @@ class NoteForm(forms.Form):
             self.add_error('password', 'Encrypted message has to have a password')
         if not cleaned_data.get('is_public') and not cleaned_data.get('shared_with'):
             self.add_error('shared_with', 'You have to share the note with someone')
+
+        content = cleaned_data.get('content')
+        content = markdown.markdown(content)
+        content = bleach.clean(content, tags=markdown_tags, attributes=markdown_attrs)
+        cleaned_data['content'] = content
         return cleaned_data
     
 class PasswordForm(forms.Form):

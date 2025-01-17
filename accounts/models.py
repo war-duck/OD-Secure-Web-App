@@ -12,3 +12,5 @@ class CustomUser(AbstractUser):
     private_key = EncryptedCharField(max_length=3000, default=initialize_private_key)
     def __str__(self):
         return self.username
+    def get_public_key(self):
+        return RSA.import_key(self.private_key).publickey().export_key('PEM')

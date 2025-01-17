@@ -37,11 +37,12 @@ class Note(models.Model):
         return key == base64.b64decode(self.password)
     
     def sign(self):
+        print('signing\n\n')
         message = self.content.encode()
         private_key = self.user.private_key.encode()
         signature = pkcs1_15.new(RSA.import_key(private_key)).sign(SHA256.new(message))
         self.signature = base64.b64encode(signature).decode()
         
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
         self.sign()
+        super().save(*args, **kwargs)
