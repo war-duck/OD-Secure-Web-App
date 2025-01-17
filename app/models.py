@@ -46,3 +46,11 @@ class Note(models.Model):
     def save(self, *args, **kwargs):
         self.sign()
         super().save(*args, **kwargs)
+
+class BlockedIP(models.Model):
+    ip = models.GenericIPAddressField(primary_key=True)
+    offense = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ip

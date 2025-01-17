@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
-
+from app.views import honeypot_admin
 app_name = 'odapp'
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('not-an-admin-login-page-bla-bla-bla-go_away/', admin.site.urls),
     path('', include('app.urls')),
-    path('', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('admin/', honeypot_admin, name='honeypot_admin'),
 ]

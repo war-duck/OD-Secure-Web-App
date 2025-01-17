@@ -14,6 +14,7 @@ from rest_framework.decorators import throttle_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import authentication_classes
+from .models import BlockedIP
 
 User = get_user_model()
 
@@ -103,3 +104,8 @@ def password_confirm(request):
         return Response({'error': 'Invalid password'}, status=400)
     note.content = decrypt_content(note.content, password)
     return Response({'content': note.content})
+
+def honeypot_admin(request):
+    ip_address = request.META.get('REMOTE_ADDR')
+    BlockedIP.objects.create(ip=ip_address, offense='Trying to access admin page')
+    return redirect('app:home')

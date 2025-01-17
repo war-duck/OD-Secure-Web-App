@@ -11,6 +11,7 @@
     <div>
         <h1>Home</h1>
         <h2>Welcome, {{ user.username }}!</h2>
+        <h4>Last login: {{ user.last_login }}</h4>
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
