@@ -5,4 +5,5 @@ services:
       - "8080:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./start.sh:/app/start.sh
     command: /app/start.sh

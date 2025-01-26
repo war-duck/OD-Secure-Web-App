@@ -10,5 +10,5 @@ RUN pacman -S --noconfirm python python-pip uwsgi uwsgi-plugin-python gcc nginx
 
 WORKDIR /app
 COPY . .
-RUN python3 -m venv venv
-RUN source venv/bin/activate && pip3 install -r requirements.txt
+RUN python3 -m venv src/venv
+RUN source src/venv/bin/activate && pip3 install -r requirements.txt
